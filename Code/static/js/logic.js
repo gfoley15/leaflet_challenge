@@ -1,17 +1,45 @@
 // Store GEO JSON endpoint as queryUrl.
-let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson"
+let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
 // Run GET request to the queryURL
 d3.json(queryUrl).then(function (data) {
-  // Once we get a response, send the data.features object to the createFeatures function.
+  // Get a response, send data.features to the createFeatures function.
   console.log(data);
   createFeatures(data.features);
 });
 
 function createFeatures(earthquakeData) {
 
-    // Define a function that we want to run once for each feature in the features array.
-    // Give each feature a popup that describes the place and time of the earthquake.
+  function getMarkerStyle(feature) {
+    console.log(feature.properties.mag)
+    let magnitude = feature.properties.mag
+    let radius = magnitude * 2
+    let fillColor = chooseColor(magnitude);
+    return {
+      radius: radius,
+      color: "grey",
+      weight: 1,
+      fillColor: fillColor,
+      opacity: 1,
+      fillOpacity: .8
+    };
+  };  
+
+  function chooseColor(magnitude) {
+    if (magnitude > 5.0) {
+      return "purple";
+    } else if (magnitude > 4) {
+      return "orange";
+    } else if (magnitude > 3) {
+      return "yellow";
+    } else if (magnitude > 2) {
+      return "green";
+    } else {
+      return "blue";
+    }
+  };
+
+  // For each feature, create popup that describes the earthquake.
     function onEachFeature(feature, layer) {
         layer.bindPopup(`<h3>${feature.properties.place}</h3>
             <hr><p>${new Date(feature.properties.time)}</p>
@@ -21,12 +49,15 @@ function createFeatures(earthquakeData) {
     // Create a GeoJSON layer that contains the features array on the earthquakeData object.
     // Run the onEachFeature function once for each piece of data in the array.
     let earthquakes = L.geoJSON(earthquakeData, {
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, getMarkerStyle(feature));
+    },
       onEachFeature: onEachFeature
     });
   
-    // Send our earthquakes layer to the createMap function/
+    // Send earthquakes layer to the createMap function
     createMap(earthquakes);
-  }
+    };
   
   function createMap(earthquakes) {
   
@@ -49,26 +80,7 @@ function createFeatures(earthquakeData) {
     let overlayMaps = {
       Earthquakes: earthquakes
     };
-
-    // // Create a new marker cluster group.
-    // let markers = L.markerClusterGroup();
-  
-    // // Loop through the data.
-    // for (let i = 0; i < data.length; i++) {
-  
-    //   // Set the data location property to a variable.
-    //   let geometry = data[i].geometry;
-  
-    //   // Check for the location property.
-    //   if (geometry) {
-  
-    //     // Add a new marker to the cluster group, and bind a popup.
-    //     markers.addLayer(L.marker([geometry.coordinates[1], location.coordinates[0]])
-    //       .bindPopup(data[i].descriptor));
-    //   }
-  
-    // }
-  
+ 
     // Create map, giving it the streetmap and earthquakes layers to display on load.
     let myMap = L.map("map", {
         center: [
@@ -84,7 +96,4 @@ function createFeatures(earthquakeData) {
     L.control.layers(baseMaps, overlayMaps, {
       collapsed: false
     }).addTo(myMap);
-
-    // // Add our marker cluster layer to the map.
-    // myMap.addLayer(markers);
 };
