@@ -10,11 +10,14 @@ d3.json(queryUrl).then(function (data) {
 
 function createFeatures(earthquakeData) {
 
-  function getMarkerStyle(feature) {
+  function markerStyle(feature) {
     console.log(feature.properties.mag)
+    console.log(feature.geometry.coordinates)
     let magnitude = feature.properties.mag
-    let radius = magnitude * 2
-    let fillColor = chooseColor(magnitude);
+    let coordinates = feature.geometry.coordinates
+    let depth = coordinates[2]
+    let radius = magnitude * 3
+    let fillColor = chooseColor(depth);
     return {
       radius: radius,
       color: "grey",
@@ -25,39 +28,68 @@ function createFeatures(earthquakeData) {
     };
   };  
 
-  function chooseColor(magnitude) {
-    if (magnitude > 5.0) {
+  function chooseColor(depth) {
+    if (depth >= 300) {
+      return "darkred";
+    } else if (depth >= 70) {
       return "purple";
-    } else if (magnitude > 4) {
-      return "orange";
-    } else if (magnitude > 3) {
-      return "yellow";
-    } else if (magnitude > 2) {
-      return "green";
-    } else {
+    } else if (depth >= 40 && depth < 70) {
       return "blue";
+    } else if (depth >= 10 && depth < 40) {
+    return "orange";
+    } else {
+      return "lightpink";
     }
   };
 
   // For each feature, create popup that describes the earthquake.
-    function onEachFeature(feature, layer) {
-        layer.bindPopup(`<h3>${feature.properties.place}</h3>
-            <hr><p>${new Date(feature.properties.time)}</p>
-            <hr><p>${feature.properties.mag}</p>`);
-    }
-  
-    // Create a GeoJSON layer that contains the features array on the earthquakeData object.
-    // Run the onEachFeature function once for each piece of data in the array.
-    let earthquakes = L.geoJSON(earthquakeData, {
-      pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, getMarkerStyle(feature));
-    },
-      onEachFeature: onEachFeature
+  function onEachFeature(feature, layer) {
+    let coordinates = feature.geometry.coordinates
+    let depth = coordinates[2]  
+      
+    layer.bindPopup(`<h3>${feature.properties.place.toUpperCase()}</h3>
+          <hr><p>Time Occured: ${new Date(feature.properties.time)}</p>
+          <p>Magnitude: ${feature.properties.mag}</p>
+          <p>Location: ${coordinates[0]}, ${coordinates[1]}</p>
+          <p>Depth: ${depth}</p>`);
+      
+    layer.on({
+      'mouseover': function (event) {
+          event.target.setStyle({ fillOpacity: 1,
+            color: "black",
+            weight: 2
+           });
+      },
+      'mouseout': function (event) {
+          event.target.setStyle({ fillOpacity: .8,
+            color: "grey",
+            weight: 1,
+           });
+      },
+      'click': function (event) {
+          myMap.fitBounds(event.target.getBounds());
+          myMap.setZoom(6);
+      }
     });
+  };
+    
   
-    // Send earthquakes layer to the createMap function
-    createMap(earthquakes);
-    };
+  // Create a GeoJSON layer that contains the features array on the earthquakeData object.
+  // Run the onEachFeature function once for each piece of data in the array.
+  let earthquakes = L.geoJSON(earthquakeData, {
+    pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, markerStyle(feature));
+    },
+    onEachFeature: onEachFeature
+  });
+  
+  // Send earthquakes layer to the createMap function
+  createMap(earthquakes);
+ 
+
+  filterMap(earthquakes);
+  };
+
   
   function createMap(earthquakes) {
   
@@ -68,12 +100,17 @@ function createFeatures(earthquakeData) {
   
     let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-    });
+    }); 
+
+    let humanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by Humanitarian OpenStreetMap Team'
+  });
   
     // Create a baseMaps object.
     let baseMaps = {
-      "Street Map": street,
-      "Topographic Map": topo
+      "Street": street,
+      "Topographic": topo,
+      "Humanitarian": humanitarian
     };
   
     // Create an overlay object to hold our overlay.
@@ -86,7 +123,7 @@ function createFeatures(earthquakeData) {
         center: [
             7.9, 14.4
           ],
-          zoom: 2.4,
+          zoom: 2.5,
       layers: [street, earthquakes]
     });
   
