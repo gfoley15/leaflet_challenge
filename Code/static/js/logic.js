@@ -1,5 +1,6 @@
 // Store GEO JSON endpoint as queryUrl.
-let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson" 
+// "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
 // Run GET request to the queryURL
 d3.json(queryUrl).then(function (data) {
@@ -104,7 +105,7 @@ function createFeatures(earthquakeData) {
 
     let humanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by Humanitarian OpenStreetMap Team'
-  });
+    });
   
     // Create a baseMaps object.
     let baseMaps = {
@@ -133,4 +134,31 @@ function createFeatures(earthquakeData) {
     L.control.layers(baseMaps, overlayMaps, {
       collapsed: false
     }).addTo(myMap);
+
+    // Create legend control
+    let legend = L.control({ position: 'bottomright' });
+
+      legend.onAdd = function() {
+          var div = L.DomUtil.create("div", "info legend");
+            labels = ['<strong>Legend</strong>'];
+            colors = ["darkred", "purple", "blue", "orange", "lightpink"];
+            categories = ["300 or higher", "70-299", "40-69", "10-39", "Below 10"];
+
+          // Loop through each category and add a colored box and label
+          for (var i = 0; i < categories.length; i++) {
+            div.innerHTML +=
+            '<i style="background:' + colors[i] + '"></i> ' +
+            categories[i] + '<br>';
+          }
+          // Add your legend content here
+          //labels.push('<i style="background: #ff0000"></i> 300 or higher');
+          //labels.push('<i style="background: #ff0000"></i> 70-299')
+          //labels.push('<i style="background: #ff0000"></i> 40-69')
+          //labels.push('<i style="background: #ff0000"></i> 10-39')
+          //labels.push('<i style="background: #ff0000"></i> 9 or below')
+
+          div.innerHTML = labels.join('<br>');
+          return div;
+      };  
+    legend.addTo(myMap);
 };
