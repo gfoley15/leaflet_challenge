@@ -10,33 +10,32 @@ html {
 }
 
 .legend {
-  padding: 10px;
   font-family: Sanchez, serif;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
-  line-height: 18px;
+  line-height: 20px;
   color: #555;
   background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.2);
+  padding: 10px;
 }
 
-.legend .low {
-  color: #ec8a2e;
+.legend-item {
+  margin-bottom: 5px;
 }
 
-.legend .empty {
-  color: #a0353a;
+.legend-color {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 10px;
+  border-radius: 50%;
 }
 
-.legend .coming-soon {
-  color: #f4ba48;
-}
-
-.legend .healthy {
-  color: #1b904f;
-}
-
-.legend .out-of-order {
-  color: #007dff;
-}
+/* Define colors for different categories */
+.legend .darkred { background-color: black; }
+.legend .purple { background-color: purple; }
+.legend .blue { background-color: red; }
+.legend .orange { background-color: orange; }
+.legend .lightpink { background-color: lightpink; }

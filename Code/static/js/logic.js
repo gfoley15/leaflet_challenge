@@ -22,7 +22,7 @@ function createFeatures(earthquakeData) {
     return {
       radius: radius,
       color: "grey",
-      weight: 1,
+      weight: 1.5,
       fillColor: fillColor,
       opacity: 1,
       fillOpacity: .8
@@ -31,11 +31,11 @@ function createFeatures(earthquakeData) {
 
   function chooseColor(depth) {
     if (depth >= 300) {
-      return "darkred";
+      return "black";
     } else if (depth >= 70) {
       return "purple";
     } else if (depth >= 40 && depth < 70) {
-      return "blue";
+      return "red";
     } else if (depth >= 10 && depth < 40) {
     return "orange";
     } else {
@@ -57,14 +57,14 @@ function createFeatures(earthquakeData) {
     layer.on({
       'mouseover': function (event) {
           event.target.setStyle({ fillOpacity: 1,
-            color: "black",
-            weight: 2
+            color: "blue",
+            weight: 3
            });
       },
       'mouseout': function (event) {
           event.target.setStyle({ fillOpacity: .8,
             color: "grey",
-            weight: 1,
+            weight: 1.5,
            });
       },
       'click': function (event) {
@@ -74,7 +74,6 @@ function createFeatures(earthquakeData) {
     });
   };
     
-  
   // Create a GeoJSON layer that contains the features array on the earthquakeData object.
   // Run the onEachFeature function once for each piece of data in the array.
   let earthquakes = L.geoJSON(earthquakeData, {
@@ -86,12 +85,9 @@ function createFeatures(earthquakeData) {
   
   // Send earthquakes layer to the createMap function
   createMap(earthquakes);
- 
-
   filterMap(earthquakes);
   };
 
-  
   function createMap(earthquakes) {
   
     // Create the base layers.
@@ -121,10 +117,8 @@ function createFeatures(earthquakeData) {
  
     // Create map, giving it the streetmap and earthquakes layers to display on load.
     let myMap = L.map("map", {
-        center: [
-            7.9, 14.4
-          ],
-          zoom: 2.5,
+      center: [7.9, 14.4],
+      zoom: 2.5,
       layers: [street, earthquakes]
     });
   
@@ -139,26 +133,27 @@ function createFeatures(earthquakeData) {
     let legend = L.control({ position: 'bottomright' });
 
       legend.onAdd = function() {
-          var div = L.DomUtil.create("div", "info legend");
-            labels = ['<strong>Legend</strong>'];
-            colors = ["darkred", "purple", "blue", "orange", "lightpink"];
-            categories = ["300 or higher", "70-299", "40-69", "10-39", "Below 10"];
-
-          // Loop through each category and add a colored box and label
-          for (var i = 0; i < categories.length; i++) {
-            div.innerHTML +=
-            '<i style="background:' + colors[i] + '"></i> ' +
-            categories[i] + '<br>';
-          }
-          // Add your legend content here
+        var div = L.DomUtil.create("div", "info legend");
+        var labels = ['<strong>Legend</strong>'];
+        var colors = ["black", "purple", "red", "orange", "lightpink"];
+        var categories = ["300 or higher", "70-299", "40-69", "10-39", "Below 10"];
+          
+        for (var i = 0; i < categories.length; i++) {
+          var label = '<div class="legend-item">' +
+                      '<div class="legend-color" style="background-color:' + colors[i] + ';"></div>' +
+                      categories[i] +
+                      '</div>';
+          labels.push(label);
+        }
+          
           //labels.push('<i style="background: #ff0000"></i> 300 or higher');
           //labels.push('<i style="background: #ff0000"></i> 70-299')
           //labels.push('<i style="background: #ff0000"></i> 40-69')
           //labels.push('<i style="background: #ff0000"></i> 10-39')
           //labels.push('<i style="background: #ff0000"></i> 9 or below')
 
-          div.innerHTML = labels.join('<br>');
-          return div;
+        div.innerHTML = labels.join('');
+        return div;
       };  
     legend.addTo(myMap);
 };
